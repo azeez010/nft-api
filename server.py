@@ -25,22 +25,38 @@ def refer(code: str):
         if address_info:
             return jsonify(address_info)
         else:
-            get_address = Address.query.filter_by(referral_code=code).first()
-            if get_address:
-                get_address.balance += REWARD
-                get_address.rewards += REWARD
-                get_address.referral_count += 1
-            
-            referral_code = remove_symbols(b64encode(os.urandom(32)).decode())[:7]
-            store_address = Address(address=address, balance=REWARD, referral_count=0, rewards=REWARD, referral_code=referral_code)
-            referral = Referral(referral_id=get_address.id, address=address )
-            
-            db.session.add(store_address)
-            db.session.add(referral)
-            
-            db.session.commit()
-            
-            return jsonify(store_address)
+            if code == "None":
+                referral_code = remove_symbols(b64encode(os.urandom(32)).decode())[:7]
+                store_address = Address(address=address, balance=REWARD, referral_count=0, rewards=REWARD, referral_code=referral_code)
+                db.session.add(store_address)
+                db.session.commit()
+
+                return jsonify(store_address)
+            else:
+                get_address = Address.query.filter_by(referral_code=code).first()
+                if get_address:
+                    get_address.balance += REWARD
+                    get_address.rewards += REWARD
+                    get_address.referral_count += 1
+                
+                    referral_code = remove_symbols(b64encode(os.urandom(32)).decode())[:7]
+                    store_address = Address(address=address, balance=REWARD, referral_count=0, rewards=REWARD, referral_code=referral_code)
+                    referral = Referral(referral_id=get_address.id, address=address )
+                
+                    db.session.add(store_address)
+                    db.session.add(referral)
+                    
+                    db.session.commit()
+                else:
+                    referral_code = remove_symbols(b64encode(os.urandom(32)).decode())[:7]
+                    store_address = Address(address=address, balance=REWARD, referral_count=0, rewards=REWARD, referral_code=referral_code)
+                
+                    db.session.add(store_address)
+                
+                    db.session.commit()
+                    
+                
+                return jsonify(store_address)
     
     
 @app.route("/address", methods=["GET", "POST"])
